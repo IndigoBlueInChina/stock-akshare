@@ -1,10 +1,10 @@
 from fastapi import APIRouter
-from mcp.stock_mcp import StockMCP
-from mcp.index_mcp import IndexMCP
-from mcp.sector_mcp import SectorMCP
-from mcp.sentiment_mcp import SentimentMCP
-from mcp.technical_mcp import TechnicalMCP
-from mcp.news_mcp import NewsMCP
+from app.mcp.stock_mcp import StockMCP  # 已修改
+from app.mcp.index_mcp import IndexMCP  # 修改导入路径
+from app.mcp.sector_mcp import SectorMCP  # 修改导入路径
+from app.mcp.sentiment_mcp import SentimentMCP  # 修改导入路径
+from app.mcp.technical_mcp import TechnicalMCP  # 修改导入路径
+from app.mcp.news_mcp import NewsMCP  # 修改导入路径
 
 mcp_router = APIRouter(prefix="/mcp")
 

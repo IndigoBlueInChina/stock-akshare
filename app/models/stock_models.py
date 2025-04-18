@@ -1,6 +1,6 @@
-from pydantic import BaseModel
-from typing import List, Optional
-from datetime import datetime
+from pydantic import BaseModel, Field  # 添加 Field 的导入
+from typing import Optional, List
+from datetime import datetime, date
 
 class StockInfo(BaseModel):
     """个股基本信息模型"""
@@ -58,15 +58,15 @@ class StockFundFlow(BaseModel):
 
 class StockHistory(BaseModel):
     """个股历史行情数据模型"""
-    code: str
-    date: str
-    open: float
-    close: float
-    high: float
-    low: float
-    volume: int  # 成交量(手)
-    amount: float  # 成交额(元)
-    amplitude: float  # 振幅(%)
-    change_percent: float  # 涨跌幅(%)
-    change_amount: float  # 涨跌额(元)
-    turnover: float  # 换手率(%)
+    stock_code: str = Field(..., description="股票代码")
+    trade_date: str = Field(..., description="交易日期")
+    open: float = Field(..., description="开盘价")
+    close: float = Field(..., description="收盘价")
+    high: float = Field(..., description="最高价")
+    low: float = Field(..., description="最低价")
+    volume: int = Field(..., description="成交量(手)")
+    amount: float = Field(..., description="成交额(元)")
+    amplitude: float = Field(..., description="振幅(%)")
+    change_percent: float = Field(..., description="涨跌幅(%)")
+    change_amount: float = Field(..., description="涨跌额(元)")
+    turnover: float = Field(..., description="换手率(%)")

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from typing import List, Optional
+from datetime import datetime
 
 from app.models.stock_models import StockInfo, StockQuote, StockFinancial, StockFundFlow, StockHistory
 from app.services.stock_service import StockService
@@ -56,6 +57,11 @@ async def get_stock_history(
 ):
     """获取个股历史行情数据"""
     try:
-        return await stock_service.get_stock_history(stock_code, period, start_date, end_date)
+        result = await stock_service.get_stock_history(stock_code, period, start_date, end_date)
+        if not result:
+            raise HTTPException(status_code=404, detail=f"未找到股票代码 {stock_code} 的历史行情数据")
+        return result
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=404, detail=f"获取个股历史行情失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"获取个股历史行情数据失败: {str(e)}")

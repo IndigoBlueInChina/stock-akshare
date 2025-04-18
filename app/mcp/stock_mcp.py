@@ -23,7 +23,7 @@ class StockMCP:
         """初始化StockMCP，创建服务实例"""
         self.stock_service = StockService()
     
-    def get_stock_info(self, stock_code: str) -> Dict:
+    async def get_stock_info(self, stock_code: str) -> Dict:
         """
         获取个股基本信息
         
@@ -51,7 +51,7 @@ class StockMCP:
         logger.info(f"MCP获取个股基本信息: {stock_code}")
         try:
             # 调用服务层获取数据
-            stock_info = self.stock_service.get_stock_info(stock_code)
+            stock_info = await self.stock_service.get_stock_info(stock_code)
             
             # 将Pydantic模型转换为字典
             result = stock_info.dict()
@@ -68,7 +68,7 @@ class StockMCP:
             logger.error(f"获取个股信息失败: {str(e)}")
             raise Exception(f"获取个股信息失败: {str(e)}")
     
-    def get_stock_quote(self, stock_code: str) -> Dict:
+    async def get_stock_quote(self, stock_code: str) -> Dict:
         """
         获取个股实时行情
         
@@ -81,7 +81,7 @@ class StockMCP:
         logger.info(f"MCP获取个股实时行情: {stock_code}")
         try:
             # 调用服务层获取数据
-            stock_quote = self.stock_service.get_stock_quote(stock_code)
+            stock_quote = await self.stock_service.get_stock_quote(stock_code)
             
             # 将Pydantic模型转换为字典
             return stock_quote.dict()
@@ -89,35 +89,35 @@ class StockMCP:
             logger.error(f"获取个股行情失败: {str(e)}")
             raise Exception(f"获取个股行情失败: {str(e)}")
     
-    def get_stock_history(self, stock_code: str, period: str = "daily", 
-                          start_date: Optional[str] = None, 
+    async def get_stock_history(self, stock_code: str, period: str = "daily",
+                          start_date: Optional[str] = None,
                           end_date: Optional[str] = None) -> List[Dict]:
         """
         获取个股历史行情
-        
+
         Args:
             stock_code: 股票代码
             period: 周期，可选 daily, weekly, monthly
             start_date: 开始日期，格式YYYYMMDD
             end_date: 结束日期，格式YYYYMMDD
-            
+
         Returns:
             List[Dict]: 包含历史行情数据的字典列表
         """
         logger.info(f"MCP获取个股历史行情: {stock_code}, 周期: {period}")
         try:
             # 调用服务层获取数据
-            history_data = self.stock_service.get_stock_history(
+            history_data = await self.stock_service.get_stock_history(
                 stock_code, period, start_date, end_date
             )
-            
+
             # 将Pydantic模型列表转换为字典列表
             return [item.dict() for item in history_data]
         except Exception as e:
             logger.error(f"获取个股历史行情失败: {str(e)}")
             raise Exception(f"获取个股历史行情失败: {str(e)}")
     
-    def get_stock_financial(self, stock_code: str) -> Dict:
+    async def get_stock_financial(self, stock_code: str) -> Dict:
         """
         获取个股财务信息
         
@@ -130,7 +130,7 @@ class StockMCP:
         logger.info(f"MCP获取个股财务信息: {stock_code}")
         try:
             # 调用服务层获取数据
-            financial_data = self.stock_service.get_stock_financial(stock_code)
+            financial_data = await self.stock_service.get_stock_financial(stock_code)
             
             # 将Pydantic模型转换为字典
             return financial_data.dict()
@@ -138,7 +138,7 @@ class StockMCP:
             logger.error(f"获取个股财务信息失败: {str(e)}")
             raise Exception(f"获取个股财务信息失败: {str(e)}")
     
-    def get_stock_fund_flow(self, stock_code: str) -> Dict:
+    async def get_stock_fund_flow(self, stock_code: str) -> Dict:
         """
         获取个股资金流向
         
@@ -151,7 +151,7 @@ class StockMCP:
         logger.info(f"MCP获取个股资金流向: {stock_code}")
         try:
             # 调用服务层获取数据
-            fund_flow_data = self.stock_service.get_stock_fund_flow(stock_code)
+            fund_flow_data = await self.stock_service.get_stock_fund_flow(stock_code)
             
             # 将Pydantic模型转换为字典
             return fund_flow_data.dict()
@@ -159,7 +159,7 @@ class StockMCP:
             logger.error(f"获取个股资金流向失败: {str(e)}")
             raise Exception(f"获取个股资金流向失败: {str(e)}")
     
-    def get_stock_margin(self, stock_code: str) -> Dict:
+    async def get_stock_margin(self, stock_code: str) -> Dict:
         """
         获取个股融资融券信息
         
@@ -172,7 +172,7 @@ class StockMCP:
         logger.info(f"MCP获取个股融资融券信息: {stock_code}")
         try:
             # 调用服务层获取数据
-            margin_data = self.stock_service.get_stock_margin(stock_code)
+            margin_data = await self.stock_service.get_stock_margin(stock_code)
             
             # 服务层返回的已经是字典
             return margin_data

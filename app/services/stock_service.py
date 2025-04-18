@@ -105,10 +105,17 @@ class StockService:
         """
         logger.info(f"获取个股历史行情: {stock_code}, 周期: {period}, 开始日期: {start_date}, 结束日期: {end_date}")
         
-        # 验证周期参数
-        if period not in ["daily", "weekly", "monthly"]:
-            logger.error(f"不支持的周期类型: {period}")
-            raise ValueError(f"不支持的周期类型: {period}，支持的类型为daily, weekly, monthly")
+        # 标准化股票代码（去掉市场前缀）
+        if stock_code.startswith(("sh", "sz", "bj")):
+            stock_code = stock_code[2:]
+        
+        # 设置默认日期范围（如果未提供）
+        if not start_date:
+            # 默认获取最近30天数据
+            start_date = (datetime.now() - timedelta(days=30)).strftime("%Y%m%d")
+        
+        if not end_date:
+            end_date = datetime.now().strftime("%Y%m%d")
         
         # 调用AKShare接口获取历史行情数据，使用前复权(qfq)
         df = ak.stock_zh_a_hist(
@@ -126,9 +133,12 @@ class StockService:
         # 将DataFrame转换为StockHistory对象列表
         result = []
         for _, row in df.iterrows():
+            # 日期字段直接使用字符串
+            trade_date_str = row["日期"]
+            
             history = StockHistory(
-                code=stock_code,
-                date=row["日期"],
+                stock_code=stock_code,
+                trade_date=trade_date_str,  # 使用字符串格式的日期
                 open=float(row["开盘"]),
                 close=float(row["收盘"]),
                 high=float(row["最高"]),
