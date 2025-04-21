@@ -27,7 +27,8 @@ class StockService:
         # 创建字典用于存储信息
         info_dict = {}
         for _, row in stock_info.iterrows():
-            info_dict[row[0]] = row[1]
+            # 使用iloc进行位置索引，而不是直接使用[]
+            info_dict[row.iloc[0]] = row.iloc[1]
         
         # 处理上市时间，确保是字符串类型
         listing_date = info_dict.get("上市时间")

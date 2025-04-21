@@ -32,8 +32,11 @@ class Settings(BaseSettings):
     REDIS_TIMEOUT: int = 3  # Redis连接超时时间(秒)
     REDIS_CACHE_EXPIRATION: int = 3600  # Redis缓存过期时间(秒)
     
-    @validator("REDIS_ENABLED", pre=True)
-    def validate_redis_enabled(cls, v, values):
+    # Replace @validator with @field_validator
+    from pydantic import field_validator  # Add this import
+    
+    @field_validator("REDIS_ENABLED", mode="before")  # Changed from @validator with pre=True to @field_validator with mode="before"
+    def validate_redis_enabled(cls, v):
         """根据环境变量自动判断Redis是否可用"""
         if isinstance(v, bool):
             return v

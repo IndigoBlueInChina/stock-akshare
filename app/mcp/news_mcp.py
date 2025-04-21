@@ -38,7 +38,7 @@ class NewsMCP:
             questions = await self.news_service.get_interactive_questions(symbol)
             
             # 将Pydantic模型列表转换为字典列表
-            return [question.dict() for question in questions]
+            return [question.model_dump() for question in questions]
         except Exception as e:
             logger.error(f"获取互动易提问数据失败: {str(e)}")
             raise Exception(f"获取互动易提问数据失败: {str(e)}")
@@ -59,7 +59,7 @@ class NewsMCP:
             telegraphs = await self.news_service.get_cls_telegraph(symbol)
             
             # 将Pydantic模型列表转换为字典列表
-            return [telegraph.dict() for telegraph in telegraphs]
+            return [telegraph.model_dump() for telegraph in telegraphs]
         except Exception as e:
             logger.error(f"获取财联社电报数据失败: {str(e)}")
             raise Exception(f"获取财联社电报数据失败: {str(e)}")
@@ -77,7 +77,7 @@ class NewsMCP:
             news_list = await self.news_service.get_global_finance_news()
 
             # 将Pydantic模型列表转换为字典列表
-            return [news.dict() for news in news_list]
+            return [news.model_dump() for news in news_list]
         except Exception as e:
             logger.error(f"获取全球财经快讯数据失败: {str(e)}")
             raise Exception(f"获取全球财经快讯数据失败: {str(e)}")

@@ -37,7 +37,7 @@ class IndexMCP:
             index_quotes = await self.index_service.get_index_quotes(symbol)
             
             # 将Pydantic模型列表转换为字典列表
-            return [quote.dict() for quote in index_quotes]
+            return [quote.model_dump() for quote in index_quotes]
         except Exception as e:
             logger.error(f"获取指数行情列表失败: {str(e)}")
             raise Exception(f"获取指数行情列表失败: {str(e)}")
@@ -62,7 +62,7 @@ class IndexMCP:
                 return None
             
             # 将Pydantic模型转换为字典
-            return index_quote.dict()
+            return index_quote.model_dump()  # Changed from .dict() to .model_dump()
         except Exception as e:
             logger.error(f"获取指数行情失败: {str(e)}")
             raise Exception(f"获取指数行情失败: {str(e)}")

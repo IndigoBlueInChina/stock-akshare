@@ -34,7 +34,7 @@ class SectorMCP:
             boards = await self.sector_service.get_concept_boards()
             
             # 将Pydantic模型列表转换为字典列表
-            return [board.dict() for board in boards]
+            return [board.model_dump() for board in boards]
         except Exception as e:
             logger.error(f"获取概念板块列表失败: {str(e)}")
             raise Exception(f"获取概念板块列表失败: {str(e)}")
@@ -59,7 +59,7 @@ class SectorMCP:
                 return None
             
             # 将Pydantic模型转换为字典
-            return board.dict()
+            return board.model_dump()
         except Exception as e:
             logger.error(f"获取概念板块失败: {str(e)}")
             raise Exception(f"获取概念板块失败: {str(e)}")
@@ -84,7 +84,7 @@ class SectorMCP:
                 return None
             
             # 将Pydantic模型转换为字典
-            return spot.dict()
+            return spot.model_dump()
         except Exception as e:
             logger.error(f"获取概念板块实时行情详情失败: {str(e)}")
             raise Exception(f"获取概念板块实时行情详情失败: {str(e)}")
@@ -109,7 +109,7 @@ class SectorMCP:
                 return None
             
             # 将Pydantic模型转换为字典
-            return spot.dict()
+            return spot.model_dump()
         except Exception as e:
             logger.error(f"通过代码获取概念板块实时行情详情失败: {str(e)}")
             raise Exception(f"通过代码获取概念板块实时行情详情失败: {str(e)}")
@@ -130,7 +130,7 @@ class SectorMCP:
             constituents = await self.sector_service.get_concept_board_constituents(symbol)
             
             # 将Pydantic模型列表转换为字典列表
-            return [constituent.dict() for constituent in constituents]
+            return [constituent.model_dump() for constituent in constituents]
         except Exception as e:
             logger.error(f"获取概念板块成份股失败: {str(e)}")
             raise Exception(f"获取概念板块成份股失败: {str(e)}")
@@ -148,7 +148,7 @@ class SectorMCP:
             boards = await self.sector_service.get_industry_boards()
             
             # 将Pydantic模型列表转换为字典列表
-            return [board.dict() for board in boards]
+            return [board.model_dump() for board in boards]
         except Exception as e:
             logger.error(f"获取行业板块列表失败: {str(e)}")
             raise Exception(f"获取行业板块列表失败: {str(e)}")
@@ -173,7 +173,7 @@ class SectorMCP:
                 return None
             
             # 将Pydantic模型转换为字典
-            return board.dict()
+            return board.model_dump()
         except Exception as e:
             logger.error(f"获取行业板块失败: {str(e)}")
             raise Exception(f"获取行业板块失败: {str(e)}")
@@ -199,7 +199,7 @@ class SectorMCP:
                 return None
             
             # 将Pydantic模型转换为字典
-            return spot.dict()
+            return spot.model_dump()
         except Exception as e:
             logger.error(f"获取行业板块实时行情详情失败: {str(e)}")
             raise Exception(f"获取行业板块实时行情详情失败: {str(e)}")
@@ -224,7 +224,7 @@ class SectorMCP:
                 return None
             
             # 将Pydantic模型转换为字典
-            return spot.dict()
+            return spot.model_dump()
         except Exception as e:
             logger.error(f"通过代码获取行业板块实时行情详情失败: {str(e)}")
             raise Exception(f"通过代码获取行业板块实时行情详情失败: {str(e)}")
@@ -245,7 +245,7 @@ class SectorMCP:
             constituents = await self.sector_service.get_industry_board_constituents(symbol)
             
             # 将Pydantic模型列表转换为字典列表
-            return [constituent.dict() for constituent in constituents]
+            return [constituent.model_dump() for constituent in constituents]
         except Exception as e:
             logger.error(f"获取行业板块成份股失败: {str(e)}")
             raise Exception(f"获取行业板块成份股失败: {str(e)}")

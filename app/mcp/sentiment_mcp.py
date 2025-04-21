@@ -37,7 +37,7 @@ class SentimentMCP:
             details = await self.sentiment_service.get_margin_details(trade_date)
             
             # 将Pydantic模型列表转换为字典列表
-            return [detail.dict() for detail in details]
+            return [detail.model_dump() for detail in details]
         except Exception as e:
             logger.error(f"获取融资融券明细数据失败: {str(e)}")
             raise Exception(f"获取融资融券明细数据失败: {str(e)}")
@@ -55,7 +55,7 @@ class SentimentMCP:
             hot_ranks = await self.sentiment_service.get_stock_hot_rank()
             
             # 将Pydantic模型列表转换为字典列表
-            return [rank.dict() for rank in hot_ranks]
+            return [rank.model_dump() for rank in hot_ranks]
         except Exception as e:
             logger.error(f"获取股票热度排名数据失败: {str(e)}")
             raise Exception(f"获取股票热度排名数据失败: {str(e)}")
@@ -73,7 +73,7 @@ class SentimentMCP:
             hot_up_ranks = await self.sentiment_service.get_stock_hot_up_rank()
             
             # 将Pydantic模型列表转换为字典列表
-            return [rank.dict() for rank in hot_up_ranks]
+            return [rank.model_dump() for rank in hot_up_ranks]
         except Exception as e:
             logger.error(f"获取股票飙升榜数据失败: {str(e)}")
             raise Exception(f"获取股票飙升榜数据失败: {str(e)}")
@@ -94,7 +94,7 @@ class SentimentMCP:
             keywords = await self.sentiment_service.get_stock_hot_keywords(symbol)
             
             # 将Pydantic模型列表转换为字典列表
-            return [keyword.dict() for keyword in keywords]
+            return [keyword.model_dump() for keyword in keywords]
         except Exception as e:
             logger.error(f"获取股票热门关键词数据失败: {str(e)}")
             raise Exception(f"获取股票热门关键词数据失败: {str(e)}")

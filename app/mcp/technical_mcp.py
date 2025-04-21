@@ -37,7 +37,7 @@ class TechnicalMCP:
             chips = await self.technical_service.get_chip_distribution(symbol, adjust)
 
             # 将Pydantic模型列表转换为字典列表
-            return [chip.dict() for chip in chips]
+            return [chip.model_dump() for chip in chips]
         except Exception as e:
             logger.error(f"获取筹码分布数据失败: {str(e)}")
             raise Exception(f"获取筹码分布数据失败: {str(e)}")

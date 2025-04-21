@@ -54,7 +54,7 @@ class StockMCP:
             stock_info = await self.stock_service.get_stock_info(stock_code)
             
             # 将Pydantic模型转换为字典
-            result = stock_info.dict()
+            result = stock_info.model_dump()
             
             # 添加一些额外的处理后的字段
             if stock_info.listing_date:
@@ -84,7 +84,7 @@ class StockMCP:
             stock_quote = await self.stock_service.get_stock_quote(stock_code)
             
             # 将Pydantic模型转换为字典
-            return stock_quote.dict()
+            return stock_quote.model_dump()
         except Exception as e:
             logger.error(f"获取个股行情失败: {str(e)}")
             raise Exception(f"获取个股行情失败: {str(e)}")
@@ -112,7 +112,7 @@ class StockMCP:
             )
 
             # 将Pydantic模型列表转换为字典列表
-            return [item.dict() for item in history_data]
+            return [item.model_dump() for item in history_data]
         except Exception as e:
             logger.error(f"获取个股历史行情失败: {str(e)}")
             raise Exception(f"获取个股历史行情失败: {str(e)}")
@@ -133,7 +133,7 @@ class StockMCP:
             financial_data = await self.stock_service.get_stock_financial(stock_code)
             
             # 将Pydantic模型转换为字典
-            return financial_data.dict()
+            return financial_data.model_dump()
         except Exception as e:
             logger.error(f"获取个股财务信息失败: {str(e)}")
             raise Exception(f"获取个股财务信息失败: {str(e)}")
@@ -154,7 +154,7 @@ class StockMCP:
             fund_flow_data = await self.stock_service.get_stock_fund_flow(stock_code)
             
             # 将Pydantic模型转换为字典
-            return fund_flow_data.dict()
+            return fund_flow_data.model_dump()
         except Exception as e:
             logger.error(f"获取个股资金流向失败: {str(e)}")
             raise Exception(f"获取个股资金流向失败: {str(e)}")
