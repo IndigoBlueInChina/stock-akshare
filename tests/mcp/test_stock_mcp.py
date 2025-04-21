@@ -23,11 +23,13 @@ async def test_get_stock_quote(stock_mcp, test_stock_code):
 async def test_get_stock_history(stock_mcp, test_stock_code):
     """测试获取个股历史行情"""
     result = await stock_mcp.get_stock_history(
-        test_stock_code, 
-        period="daily", 
-        start_date="20230101", 
+        test_stock_code,
+        period="daily",
+        start_date="20230101",
         end_date="20230110"
     )
     assert result is not None
     assert len(result) > 0
-    assert "日期" in result[0] or "date" in result[0]
+    assert "trade_date" in result[0]  # 修改这里，使用正确的字段名称
+    assert "open" in result[0]
+    assert "close" in result[0]

@@ -1,5 +1,6 @@
 import akshare as ak
-from datetime import datetime
+import pandas as pd  # 添加pandas导入
+from datetime import datetime, timedelta  # 添加timedelta导入
 from typing import List, Optional
 # 更新导入语句
 from app.models.stock_models import StockInfo, StockQuote, StockFinancial, StockFundFlow, StockHistory
@@ -28,12 +29,18 @@ class StockService:
         for _, row in stock_info.iterrows():
             info_dict[row[0]] = row[1]
         
+        # 处理上市时间，确保是字符串类型
+        listing_date = info_dict.get("上市时间")
+        if listing_date is not None:
+            # 将上市时间转换为字符串类型
+            listing_date = str(listing_date)
+        
         # 处理数据并返回
         return StockInfo(
             code=stock_code,
             name=info_dict.get("股票简称", ""),
             industry=info_dict.get("行业", None),
-            listing_date=info_dict.get("上市时间", None),
+            listing_date=listing_date,  # 使用转换后的字符串
             total_market_value=float(info_dict.get("总市值", 0)) if info_dict.get("总市值") else None,
             circulating_market_value=float(info_dict.get("流通市值", 0)) if info_dict.get("流通市值") else None,
             total_share=float(info_dict.get("总股本", 0)) if info_dict.get("总股本") else None,
@@ -43,19 +50,37 @@ class StockService:
     @handle_akshare_exception
     async def get_stock_quote(self, stock_code: str) -> StockQuote:
         """获取个股实时行情"""
+        logger.info(f"获取个股实时行情: {stock_code}")
+        
         # 调用AKShare接口获取个股实时行情
         stock_quote = ak.stock_zh_a_spot_em()
+        
         # 筛选指定股票并处理数据
         stock_data = stock_quote[stock_quote['代码'] == stock_code]
         if stock_data.empty:
+            logger.warning(f"未找到股票代码 {stock_code} 的行情数据")
             raise ValueError(f"未找到股票代码 {stock_code} 的行情数据")
         
+        # 获取第一行数据
+        row = stock_data.iloc[0]
+        
+        # 创建并返回StockQuote对象，确保包含所有必需字段
         return StockQuote(
             code=stock_code,
-            name=stock_data['名称'].values[0],
-            price=float(stock_data['最新价'].values[0]),
-            change=float(stock_data['涨跌幅'].values[0]),
-            # 其他字段处理...
+            name=row['名称'],
+            price=float(row['最新价']),
+            change=float(row['涨跌额']),
+            change_percent=float(row['涨跌幅']),
+            open=float(row['今开']),
+            high=float(row['最高']),
+            low=float(row['最低']),
+            volume=int(row['成交量']),
+            amount=float(row['成交额']),
+            turnover_rate=float(row['换手率']),
+            pe_ratio=float(row['市盈率-动态']) if '市盈率-动态' in row and not pd.isna(row['市盈率-动态']) else None,
+            pb_ratio=float(row['市净率']) if '市净率' in row and not pd.isna(row['市净率']) else None,
+            market_cap=float(row['总市值']) if '总市值' in row and not pd.isna(row['总市值']) else None,
+            update_time=datetime.now()
         )
     
     @handle_akshare_exception
@@ -133,8 +158,11 @@ class StockService:
         # 将DataFrame转换为StockHistory对象列表
         result = []
         for _, row in df.iterrows():
-            # 日期字段直接使用字符串
-            trade_date_str = row["日期"]
+            # 确保日期是字符串类型
+            if isinstance(row["日期"], (datetime, pd.Timestamp, pd.DatetimeIndex)):
+                trade_date_str = row["日期"].strftime("%Y-%m-%d")
+            else:
+                trade_date_str = str(row["日期"])
             
             history = StockHistory(
                 stock_code=stock_code,

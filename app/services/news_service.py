@@ -50,9 +50,45 @@ class NewsService:
             answer_content = row["回答内容"] if pd.notna(row["回答内容"]) else None
             answerer = row["回答者"] if pd.notna(row["回答者"]) else None
             
-            # 转换日期时间格式
-            question_time = row["提问时间"].to_pydatetime() if pd.notna(row["提问时间"]) else datetime.now()
-            update_time = row["更新时间"].to_pydatetime() if pd.notna(row["更新时间"]) else datetime.now()
+            # 安全地处理日期时间
+            question_time = None
+            update_time = None
+            
+            # 处理提问时间
+            if pd.notna(row["提问时间"]):
+                if hasattr(row["提问时间"], "to_pydatetime"):
+                    question_time = row["提问时间"].to_pydatetime()
+                elif isinstance(row["提问时间"], str):
+                    # 如果是字符串，尝试解析
+                    try:
+                        question_time = datetime.strptime(row["提问时间"], "%Y-%m-%d %H:%M:%S")
+                    except ValueError:
+                        # 如果格式不匹配，直接使用字符串
+                        question_time = row["提问时间"]
+                else:
+                    # 其他情况，转为字符串
+                    question_time = str(row["提问时间"])
+            
+            # 处理更新时间
+            if pd.notna(row["更新时间"]):
+                if hasattr(row["更新时间"], "to_pydatetime"):
+                    update_time = row["更新时间"].to_pydatetime()
+                elif isinstance(row["更新时间"], str):
+                    # 如果是字符串，尝试解析
+                    try:
+                        update_time = datetime.strptime(row["更新时间"], "%Y-%m-%d %H:%M:%S")
+                    except ValueError:
+                        # 如果格式不匹配，直接使用字符串
+                        update_time = row["更新时间"]
+                else:
+                    # 其他情况，转为字符串
+                    update_time = str(row["更新时间"])
+            
+            # 如果时间字段为空，使用当前时间
+            if question_time is None:
+                question_time = datetime.now()
+            if update_time is None:
+                update_time = datetime.now()
             
             question = InteractiveQuestion(
                 stock_code=row["股票代码"],
@@ -133,8 +169,25 @@ class NewsService:
             # 处理可能的NaN值
             title = row["标题"] if pd.notna(row["标题"]) else ""
             content = row["内容"] if pd.notna(row["内容"]) else ""
+            
+            # 处理日期和时间字段，确保转换为字符串
             publish_date = row["发布日期"] if pd.notna(row["发布日期"]) else ""
+            if not isinstance(publish_date, str):
+                # 如果是日期对象，转换为字符串格式
+                try:
+                    publish_date = publish_date.strftime("%Y-%m-%d") if hasattr(publish_date, "strftime") else str(publish_date)
+                except Exception as e:
+                    logger.warning(f"转换发布日期失败: {e}")
+                    publish_date = str(publish_date)
+            
             publish_time = row["发布时间"] if pd.notna(row["发布时间"]) else ""
+            if not isinstance(publish_time, str):
+                # 如果是时间对象，转换为字符串格式
+                try:
+                    publish_time = publish_time.strftime("%H:%M:%S") if hasattr(publish_time, "strftime") else str(publish_time)
+                except Exception as e:
+                    logger.warning(f"转换发布时间失败: {e}")
+                    publish_time = str(publish_time)
             
             telegraph = CLSTelegraph(
                 title=title,

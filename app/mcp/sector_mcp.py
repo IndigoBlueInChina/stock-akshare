@@ -178,74 +178,74 @@ class SectorMCP:
             logger.error(f"获取行业板块失败: {str(e)}")
             raise Exception(f"获取行业板块失败: {str(e)}")
 
+    # 修复以下三个方法的缩进，使其成为类的方法
+    async def get_industry_board_spot(self, name: str) -> Optional[Dict]:
+        """
+        获取行业板块实时行情详情（通过名称）
+        
+        Args:
+            name: 板块名称，如"小金属"
+            
+        Returns:
+            Optional[Dict]: 行业板块实时行情详情，如果未找到则返回None
+        """
+        logger.info(f"MCP获取行业板块实时行情详情: {name}")
+        try:
+            # 调用服务层获取数据
+            spot = await self.sector_service.get_industry_board_spot(name)
+            
+            # 如果未找到板块，返回None
+            if spot is None:
+                return None
+            
+            # 将Pydantic模型转换为字典
+            return spot.dict()
+        except Exception as e:
+            logger.error(f"获取行业板块实时行情详情失败: {str(e)}")
+            raise Exception(f"获取行业板块实时行情详情失败: {str(e)}")
 
-async def get_industry_board_spot(self, name: str) -> Optional[Dict]:
-    """
-    获取行业板块实时行情详情（通过名称）
-    
-    Args:
-        name: 板块名称，如"小金属"
+    async def get_industry_board_spot_by_code(self, board_code: str) -> Optional[Dict]:
+        """
+        获取行业板块实时行情详情（通过代码）
         
-    Returns:
-        Optional[Dict]: 行业板块实时行情详情，如果未找到则返回None
-    """
-    logger.info(f"MCP获取行业板块实时行情详情: {name}")
-    try:
-        # 调用服务层获取数据
-        spot = await self.sector_service.get_industry_board_spot(name)
-        
-        # 如果未找到板块，返回None
-        if spot is None:
-            return None
-        
-        # 将Pydantic模型转换为字典
-        return spot.dict()
-    except Exception as e:
-        logger.error(f"获取行业板块实时行情详情失败: {str(e)}")
-        raise Exception(f"获取行业板块实时行情详情失败: {str(e)}")
+        Args:
+            board_code: 板块代码，如"BK1027"
+            
+        Returns:
+            Optional[Dict]: 行业板块实时行情详情，如果未找到则返回None
+        """
+        logger.info(f"MCP通过代码获取行业板块实时行情详情: {board_code}")
+        try:
+            # 调用服务层获取数据
+            spot = await self.sector_service.get_industry_board_spot_by_code(board_code)
+            
+            # 如果未找到板块，返回None
+            if spot is None:
+                return None
+            
+            # 将Pydantic模型转换为字典
+            return spot.dict()
+        except Exception as e:
+            logger.error(f"通过代码获取行业板块实时行情详情失败: {str(e)}")
+            raise Exception(f"通过代码获取行业板块实时行情详情失败: {str(e)}")
 
-async def get_industry_board_spot_by_code(self, board_code: str) -> Optional[Dict]:
-    """
-    获取行业板块实时行情详情（通过代码）
-    
-    Args:
-        board_code: 板块代码，如"BK1027"
+    async def get_industry_board_constituents(self, symbol: str) -> List[Dict]:
+        """
+        获取行业板块成份股
         
-    Returns:
-        Optional[Dict]: 行业板块实时行情详情，如果未找到则返回None
-    """
-    logger.info(f"MCP通过代码获取行业板块实时行情详情: {board_code}")
-    try:
-        # 调用服务层获取数据
-        spot = await self.sector_service.get_industry_board_spot_by_code(board_code)
-        
-        # 如果未找到板块，返回None
-        if spot is None:
-            return None
-        
-        # 将Pydantic模型转换为字典
-        return spot.dict()
-    except Exception as e:
-        logger.error(f"通过代码获取行业板块实时行情详情失败: {str(e)}")
-        raise Exception(f"通过代码获取行业板块实时行情详情失败: {str(e)}")
-
-async def get_industry_board_constituents(self, symbol: str) -> List[Dict]:
-    """
-    获取行业板块成份股
-    
-    Args:
-        symbol: 板块名称或代码，如"小金属"或"BK1027"
-        
-    Returns:
-        List[Dict]: 行业板块成份股列表
-    """
-    logger.info(f"MCP获取行业板块成份股: {symbol}")
-    try:
-        # 调用服务层获取数据
-        constituents = await self.sector_service.get_industry_board_constituents(symbol)
-        
-        # 将Pydantic模型列表转换为字典列表
-        return [constituent.dict() for constituent in constituents]
-    except Exception as e:
-        logger.error(f"获取行业板块成份股失败: {str(e)}")
-        raise Exception(f"获取行业板块成份股失败: {str(e)}")
+        Args:
+            symbol: 板块名称或代码，如"小金属"或"BK1027"
+            
+        Returns:
+            List[Dict]: 行业板块成份股列表
+        """
+        logger.info(f"MCP获取行业板块成份股: {symbol}")
+        try:
+            # 调用服务层获取数据
+            constituents = await self.sector_service.get_industry_board_constituents(symbol)
+            
+            # 将Pydantic模型列表转换为字典列表
+            return [constituent.dict() for constituent in constituents]
+        except Exception as e:
+            logger.error(f"获取行业板块成份股失败: {str(e)}")
+            raise Exception(f"获取行业板块成份股失败: {str(e)}")

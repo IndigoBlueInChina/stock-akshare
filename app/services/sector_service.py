@@ -1,5 +1,6 @@
 import akshare as ak
 import pandas as pd
+import math
 from datetime import datetime
 from typing import List, Optional
 from app.models.sector_models import (
@@ -12,6 +13,29 @@ from app.core.logging import get_logger
 from app.utils.cache import cache_result
 
 logger = get_logger(__name__)
+
+# 添加一个辅助函数来处理特殊浮点值
+def safe_float(value, default=None):
+    """
+    安全地将值转换为浮点数，处理NaN和Infinity
+    
+    Args:
+        value: 要转换的值
+        default: 如果转换失败或值为特殊值时返回的默认值
+        
+    Returns:
+        float: 转换后的浮点数或默认值
+    """
+    if pd.isna(value):
+        return default
+    
+    try:
+        float_value = float(value)
+        if math.isnan(float_value) or math.isinf(float_value):
+            return default
+        return float_value
+    except (ValueError, TypeError):
+        return default
 
 class SectorService:
     """板块服务"""
@@ -37,22 +61,22 @@ class SectorService:
         # 将DataFrame转换为ConceptBoard对象列表
         result = []
         for _, row in df.iterrows():
-            # 处理可能的NaN值
+            # 使用safe_float函数处理所有浮点值
             market_value = int(row["总市值"]) if not pd.isna(row["总市值"]) else None
             
             board = ConceptBoard(
                 rank=int(row["排名"]),
                 name=row["板块名称"],
                 code=row["板块代码"],
-                price=float(row["最新价"]),
-                change=float(row["涨跌额"]),
-                change_percent=float(row["涨跌幅"]),
+                price=safe_float(row["最新价"], 0),
+                change=safe_float(row["涨跌额"], 0),
+                change_percent=safe_float(row["涨跌幅"], 0),
                 market_value=market_value,
-                turnover_rate=float(row["换手率"]),
+                turnover_rate=safe_float(row["换手率"], 0),
                 up_count=int(row["上涨家数"]),
                 down_count=int(row["下跌家数"]),
                 leading_stock=row["领涨股票"],
-                leading_stock_change_percent=float(row["领涨股票-涨跌幅"]),
+                leading_stock_change_percent=safe_float(row["领涨股票-涨跌幅"], 0),
                 update_time=datetime.now()
             )
             result.append(board)
@@ -61,17 +85,30 @@ class SectorService:
     
     @cache_result()
     @handle_akshare_exception
-    async def get_concept_board(self, board_code: str) -> Optional[ConceptBoard]:
+    async def get_concept_board(self, board_code: str, name: Optional[str] = None) -> Optional[ConceptBoard]:
         """
-        获取单个概念板块的实时行情
+        获取单个概念板块信息
         
         Args:
-            board_code: 板块代码，如"BK0892"
+            board_code: 板块代码，如"BK0715"
+            name: 板块名称，如"可燃冰"，当提供名称时，会尝试通过名称查找板块代码
             
         Returns:
-            Optional[ConceptBoard]: 概念板块数据，如果未找到则返回None
+            Optional[ConceptBoard]: 概念板块信息，如果未找到则返回None
         """
-        logger.info(f"获取单个概念板块: {board_code}")
+        logger.info(f"获取单个概念板块 get_concept_board : {board_code}")
+        
+        # 如果提供了名称，尝试通过名称查找板块代码
+        if name:
+            logger.info(f"尝试通过名称查找板块代码: {name}")
+            all_boards = await self.get_concept_boards()
+            
+            # 查找匹配的板块
+            for board in all_boards:
+                if board.name == name:
+                    board_code = board.code
+                    logger.info(f"找到板块代码: {board_code}")
+                    break
         
         # 获取所有概念板块
         all_boards = await self.get_concept_boards()
@@ -84,6 +121,8 @@ class SectorService:
         logger.warning(f"未找到板块代码 {board_code} 的数据")
         return None
     
+    @cache_result()
+    @handle_akshare_exception
     @cache_result()
     @handle_akshare_exception
     async def get_concept_board_spot(self, board_name: str) -> Optional[ConceptBoardSpot]:
@@ -111,19 +150,19 @@ class SectorService:
             for _, row in df.iterrows():
                 data_dict[row["item"]] = row["value"]
             
-            # 创建ConceptBoardSpot对象
+            # 创建ConceptBoardSpot对象，使用safe_float处理所有浮点值
             spot = ConceptBoardSpot(
                 name=board_name,
-                price=float(data_dict.get("最新", 0)),
-                high=float(data_dict.get("最高", 0)),
-                low=float(data_dict.get("最低", 0)),
-                open=float(data_dict.get("开盘", 0)),
-                volume=float(data_dict.get("成交量", 0)),
-                amount=float(data_dict.get("成交额", 0)),
-                turnover_rate=float(data_dict.get("换手率", 0)),
-                change=float(data_dict.get("涨跌额", 0)),
-                change_percent=float(data_dict.get("涨跌幅", 0)),
-                amplitude=float(data_dict.get("振幅", 0)),
+                price=safe_float(data_dict.get("最新", 0), 0),
+                high=safe_float(data_dict.get("最高", 0), 0),
+                low=safe_float(data_dict.get("最低", 0), 0),
+                open=safe_float(data_dict.get("开盘", 0), 0),
+                volume=safe_float(data_dict.get("成交量", 0), 0),
+                amount=safe_float(data_dict.get("成交额", 0), 0),
+                turnover_rate=safe_float(data_dict.get("换手率", 0), 0),
+                change=safe_float(data_dict.get("涨跌额", 0), 0),
+                change_percent=safe_float(data_dict.get("涨跌幅", 0), 0),
+                amplitude=safe_float(data_dict.get("振幅", 0), 0),
                 update_time=datetime.now()
             )
             
@@ -180,27 +219,24 @@ class SectorService:
             # 将DataFrame转换为ConceptBoardConstituent对象列表
             result = []
             for _, row in df.iterrows():
-                # 处理可能的NaN值
-                pe_ratio = float(row["市盈率-动态"]) if not pd.isna(row["市盈率-动态"]) else None
-                pb_ratio = float(row["市净率"]) if not pd.isna(row["市净率"]) else None
-                
+                # 使用safe_float函数处理所有浮点值
                 constituent = ConceptBoardConstituent(
                     rank=int(row["序号"]),
                     code=row["代码"],
                     name=row["名称"],
-                    price=float(row["最新价"]),
-                    change_percent=float(row["涨跌幅"]),
-                    change=float(row["涨跌额"]),
-                    volume=float(row["成交量"]),
-                    amount=float(row["成交额"]),
-                    amplitude=float(row["振幅"]),
-                    high=float(row["最高"]),
-                    low=float(row["最低"]),
-                    open=float(row["今开"]),
-                    pre_close=float(row["昨收"]),
-                    turnover_rate=float(row["换手率"]),
-                    pe_ratio=pe_ratio,
-                    pb_ratio=pb_ratio,
+                    price=safe_float(row["最新价"], 0),
+                    change_percent=safe_float(row["涨跌幅"], 0),
+                    change=safe_float(row["涨跌额"], 0),
+                    volume=safe_float(row["成交量"], 0),
+                    amount=safe_float(row["成交额"], 0),
+                    amplitude=safe_float(row["振幅"], 0),
+                    high=safe_float(row["最高"], 0),
+                    low=safe_float(row["最低"], 0),
+                    open=safe_float(row["今开"], 0),
+                    pre_close=safe_float(row["昨收"], 0),
+                    turnover_rate=safe_float(row["换手率"], 0),
+                    pe_ratio=safe_float(row["市盈率-动态"]),
+                    pb_ratio=safe_float(row["市净率"]),
                     update_time=datetime.now()
                 )
                 result.append(constituent)
@@ -208,6 +244,8 @@ class SectorService:
             return result
         except Exception as e:
             logger.error(f"获取概念板块成份股失败: {str(e)}")
+            # 重要：这里需要抛出异常，而不是返回None
+            raise ValueError(f"获取概念板块成份股失败: {str(e)}")
 
     @cache_result()
     @handle_akshare_exception
@@ -230,22 +268,22 @@ class SectorService:
         # 将DataFrame转换为IndustryBoard对象列表
         result = []
         for _, row in df.iterrows():
-            # 处理可能的NaN值
+            # 使用safe_float函数处理所有浮点值
             market_value = int(row["总市值"]) if not pd.isna(row["总市值"]) else None
             
             board = IndustryBoard(
                 rank=int(row["排名"]),
                 name=row["板块名称"],
                 code=row["板块代码"],
-                price=float(row["最新价"]),
-                change=float(row["涨跌额"]),
-                change_percent=float(row["涨跌幅"]),
+                price=safe_float(row["最新价"], 0),
+                change=safe_float(row["涨跌额"], 0),
+                change_percent=safe_float(row["涨跌幅"], 0),
                 market_value=market_value,
-                turnover_rate=float(row["换手率"]),
+                turnover_rate=safe_float(row["换手率"], 0),
                 up_count=int(row["上涨家数"]),
                 down_count=int(row["下跌家数"]),
                 leading_stock=row["领涨股票"],
-                leading_stock_change_percent=float(row["领涨股票-涨跌幅"]),
+                leading_stock_change_percent=safe_float(row["领涨股票-涨跌幅"], 0),
                 update_time=datetime.now()
             )
             result.append(board)
@@ -304,19 +342,19 @@ class SectorService:
             for _, row in df.iterrows():
                 data_dict[row["item"]] = row["value"]
             
-            # 创建IndustryBoardSpot对象
+            # 创建IndustryBoardSpot对象，使用safe_float处理所有浮点值
             spot = IndustryBoardSpot(
                 name=board_name,
-                price=float(data_dict.get("最新", 0)),
-                high=float(data_dict.get("最高", 0)),
-                low=float(data_dict.get("最低", 0)),
-                open=float(data_dict.get("开盘", 0)),
-                volume=float(data_dict.get("成交量", 0)),
-                amount=float(data_dict.get("成交额", 0)),
-                turnover_rate=float(data_dict.get("换手率", 0)),
-                change=float(data_dict.get("涨跌额", 0)),
-                change_percent=float(data_dict.get("涨跌幅", 0)),
-                amplitude=float(data_dict.get("振幅", 0)),
+                price=safe_float(data_dict.get("最新", 0), 0),
+                high=safe_float(data_dict.get("最高", 0), 0),
+                low=safe_float(data_dict.get("最低", 0), 0),
+                open=safe_float(data_dict.get("开盘", 0), 0),
+                volume=safe_float(data_dict.get("成交量", 0), 0),
+                amount=safe_float(data_dict.get("成交额", 0), 0),
+                turnover_rate=safe_float(data_dict.get("换手率", 0), 0),
+                change=safe_float(data_dict.get("涨跌额", 0), 0),
+                change_percent=safe_float(data_dict.get("涨跌幅", 0), 0),
+                amplitude=safe_float(data_dict.get("振幅", 0), 0),
                 update_time=datetime.now()
             )
             
@@ -373,27 +411,24 @@ class SectorService:
             # 将DataFrame转换为IndustryBoardConstituent对象列表
             result = []
             for _, row in df.iterrows():
-                # 处理可能的NaN值
-                pe_ratio = float(row["市盈率-动态"]) if not pd.isna(row["市盈率-动态"]) else None
-                pb_ratio = float(row["市净率"]) if not pd.isna(row["市净率"]) else None
-                
+                # 使用safe_float函数处理所有浮点值
                 constituent = IndustryBoardConstituent(
                     rank=int(row["序号"]),
                     code=row["代码"],
                     name=row["名称"],
-                    price=float(row["最新价"]),
-                    change_percent=float(row["涨跌幅"]),
-                    change=float(row["涨跌额"]),
-                    volume=float(row["成交量"]),
-                    amount=float(row["成交额"]),
-                    amplitude=float(row["振幅"]),
-                    high=float(row["最高"]),
-                    low=float(row["最低"]),
-                    open=float(row["今开"]),
-                    pre_close=float(row["昨收"]),
-                    turnover_rate=float(row["换手率"]),
-                    pe_ratio=pe_ratio,
-                    pb_ratio=pb_ratio,
+                    price=safe_float(row["最新价"], 0),
+                    change_percent=safe_float(row["涨跌幅"], 0),
+                    change=safe_float(row["涨跌额"], 0),
+                    volume=safe_float(row["成交量"], 0),
+                    amount=safe_float(row["成交额"], 0),
+                    amplitude=safe_float(row["振幅"], 0),
+                    high=safe_float(row["最高"], 0),
+                    low=safe_float(row["最低"], 0),
+                    open=safe_float(row["今开"], 0),
+                    pre_close=safe_float(row["昨收"], 0),
+                    turnover_rate=safe_float(row["换手率"], 0),
+                    pe_ratio=safe_float(row["市盈率-动态"]),
+                    pb_ratio=safe_float(row["市净率"]),
                     update_time=datetime.now()
                 )
                 result.append(constituent)

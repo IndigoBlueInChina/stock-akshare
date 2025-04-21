@@ -37,7 +37,7 @@ def test_get_stock_history():
     assert response.status_code == 200
     data = response.json()
     assert len(data) > 0
-    assert data[0]["code"] == stock_code
-    assert "date" in data[0]
+    assert data[0]["stock_code"] == stock_code
+    assert "trade_date" in data[0]  # 修改这里，从"date"改为"trade_date"
     assert "open" in data[0]
     assert "close" in data[0]

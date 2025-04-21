@@ -8,6 +8,7 @@ from app.services.stock_service import StockService
 router = APIRouter()
 stock_service = StockService()
 
+# 修改路径，移除"/stock"前缀，因为这个前缀可能在主应用中通过prefix参数添加
 @router.get("/{stock_code}/info", response_model=StockInfo)
 async def get_stock_info(stock_code: str):
     """获取个股基本信息"""

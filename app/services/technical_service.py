@@ -45,10 +45,13 @@ class TechnicalService:
             result = []
             for _, row in df.iterrows():
                 # 确保日期是字符串类型
-                trade_date = row["日期"]
+                if isinstance(row["日期"], (datetime, pd.Timestamp, pd.DatetimeIndex, date)):
+                    trade_date_str = row["日期"].strftime("%Y-%m-%d")
+                else:
+                    trade_date_str = str(row["日期"])
                 
                 chip = ChipDistribution(
-                    trade_date=trade_date,
+                    trade_date=trade_date_str,  # 使用转换后的字符串
                     stock_code=symbol,
                     profit_ratio=float(row["获利比例"]),
                     avg_cost=float(row["平均成本"]),

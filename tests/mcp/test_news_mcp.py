@@ -28,7 +28,7 @@ async def test_get_cls_telegraph(news_mcp):
     assert "publish_time" in result[0]
     
     # 测试重点类型
-    result = news_mcp.get_cls_telegraph(symbol="重点")
+    result = await news_mcp.get_cls_telegraph(symbol="重点")  # 添加await关键字
     assert result is not None
     assert len(result) > 0
 

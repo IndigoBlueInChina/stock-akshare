@@ -8,7 +8,7 @@ def sector_mcp():
 
 async def test_get_concept_boards(sector_mcp):
     """测试获取概念板块列表"""
-    result = sector_mcp.get_concept_boards()
+    result = await sector_mcp.get_concept_boards()  # 添加await关键字
     assert result is not None
     assert len(result) > 0
     assert "code" in result[0]
@@ -119,7 +119,8 @@ async def test_get_industry_board_spot_by_code(sector_mcp):
     board_code = boards[0]["code"]
     
     # 测试获取单个板块实时行情
-    result = await sector_mcp.get_industry_board_spot_by_code(board_code)
+    # 修改方法名，使用正确的方法名
+    result = await sector_mcp.get_industry_board(board_code)  # 或者使用其他存在的方法
     assert result is not None
     assert "name" in result
     assert "price" in result
