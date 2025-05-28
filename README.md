@@ -33,7 +33,7 @@
 
 1. 安装依赖：
    ```bash
-   pip install -r requirements.txt
+   poetry install
    ```
 
 2. 配置环境变量（可选）：
@@ -49,7 +49,7 @@
 
 1. 启动 FastAPI 服务：
    ```bash
-   python run.py
+   poetry run python run.py
    ```
 
 2. 服务默认运行在 `http://localhost:8000`，可以通过以下地址访问：
